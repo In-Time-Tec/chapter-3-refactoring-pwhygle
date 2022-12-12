@@ -1,21 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq.Expressions;
 
 namespace TheatricalPlayersRefactoringKata
 {
     public class StatementPrinter
     {
-        CultureInfo cultureInfo = new CultureInfo("en-US");
-        public string Print(Invoice invoice, Dictionary<string, Play> plays)
+        private CultureInfo cultureInfo = new CultureInfo("en-US");
+        private readonly Invoice _invoice;
+        private readonly Dictionary<string, Play> _plays;
+
+        public StatementPrinter(Invoice invoice, Dictionary<string, Play> plays)
+        {
+            _invoice = invoice;
+            _plays = plays;
+        }
+        
+
+        public string Print()
         {
             var totalAmount = 0;
             var volumeCredits = 0;
-            var result = GetStatementHeader(invoice);
+            var result = GetStatementHeader(_invoice);
            
-            foreach(var performance in invoice.Performances)
+            foreach(var performance in _invoice.Performances)
             {
-                var play = plays[performance.PlayID];
+                var play = _plays[performance.PlayID];
                 var performanceAmount = CalculatePerfomanceAmount(performance, play.Type);
                 volumeCredits = GetVolumeCredits(volumeCredits, performance, play);
 
