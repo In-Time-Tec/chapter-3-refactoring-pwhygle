@@ -11,22 +11,16 @@ namespace TheatricalPlayersRefactoringKata
         {
             var totalAmount = 0;
             var volumeCredits = 0;
-            var result = string.Format("Statement for {0}\n", invoice.Customer);
+            var result = GetStatementHeader(invoice);
            
-
             foreach(var performance in invoice.Performances)
             {
                 var play = plays[performance.PlayID];
                 var performanceAmount = CalculatePerfomanceAmount(performance, play.Type);
+                volumeCredits = GetVolumeCredits(volumeCredits, performance, play);
 
-                // add volume credits
-                volumeCredits += Math.Max(performance.Audience - 30, 0);
+                result = GetLineItemDetail(result, performance, play, performanceAmount);
 
-                // add extra credit for every ten comedy attendees
-                if (PlayType.Comedy == play.Type) volumeCredits += (int)Math.Floor((decimal)performance.Audience / 5);
-
-                // print line for this order
-                result += String.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(performanceAmount / 100), performance.Audience);
                 totalAmount += performanceAmount;
             }
             result += String.Format(cultureInfo, "Amount owed is {0:C}\n", Convert.ToDecimal(totalAmount / 100));
@@ -34,6 +28,37 @@ namespace TheatricalPlayersRefactoringKata
             return result;
         }
 
+        private int GetVolumeCredits(int volumeCredits, Performance performance, Play play)
+        {
+            volumeCredits += GetAdditionalVolumeCredits(performance);
+
+            if (PlayType.Comedy == play.Type)
+            {
+                volumeCredits += GetAdditionalComedyVolumeCredits(performance);
+            }
+
+            return volumeCredits;
+        }
+
+        private string GetLineItemDetail(string result, Performance performance, Play play, int performanceAmount)
+        {
+            result += String.Format(cultureInfo, "  {0}: {1:C} ({2} seats)\n", play.Name, Convert.ToDecimal(performanceAmount / 100), performance.Audience);
+            return result;
+        }
+
+        private string GetStatementHeader(Invoice invoice)
+        {
+            return string.Format("Statement for {0}\n", invoice.Customer);
+        }
+        private int GetAdditionalComedyVolumeCredits(Performance performance)
+        {
+            return (int)Math.Floor((decimal)performance.Audience / 5);
+        }
+        private int GetAdditionalVolumeCredits(Performance performance)
+        {
+            return Math.Max(performance.Audience - 30, 0);
+        }
+        
         private int CalculatePerfomanceAmount(Performance performance, PlayType playType)
         {
             switch (playType)
@@ -43,7 +68,7 @@ namespace TheatricalPlayersRefactoringKata
                 case PlayType.Comedy:
                     return CalculateComedyPerformanceAmount(performance);
                 default:
-                    throw new Exception("unknown type: " + playType);
+                    throw new Exception("Unsurported Type: " + playType);
             }
         }
 

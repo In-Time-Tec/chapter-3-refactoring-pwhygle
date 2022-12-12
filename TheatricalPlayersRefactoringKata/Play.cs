@@ -4,6 +4,8 @@ namespace TheatricalPlayersRefactoringKata
     {
         Tragedy,
         Comedy,
+        History,
+        Pastoral,
     }
     public class Play
     {
